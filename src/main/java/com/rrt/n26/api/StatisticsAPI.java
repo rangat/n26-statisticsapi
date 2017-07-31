@@ -1,4 +1,4 @@
-package com.rrt.n26;
+package com.rrt.n26.api;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
@@ -17,6 +17,6 @@ public class StatisticsAPI {
     @GET
     @Produces(MediaType.TEXT_PLAIN)
     public String handleGet() {
-        return "Got";
+        return "Got\n";
     }
 }

@@ -47,10 +47,13 @@
             <groupId>org.glassfish.jersey.inject</groupId>
             <artifactId>jersey-hk2</artifactId>
         </dependency>
-        <!--dependency>
+        <dependency>
             <groupId>org.glassfish.jersey.media</groupId>
-            <artifactId>jersey-media-json</artifactId>
-        </dependency-->
+            <artifactId>jersey-media-moxy</artifactId>
+        </dependency>
+
+
+        <!-- TEST DEPENDENCIES -->
 
         <dependency>
             <groupId>org.scalactic</groupId>
