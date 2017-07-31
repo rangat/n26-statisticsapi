@@ -11,7 +11,7 @@ class StatisticsAPITest extends FlatSpec with Matchers with BeforeAndAfterAll {
   private var target: WebTarget = _
 
   override def beforeAll: Unit = {
-    server = Main.startServer()
+    server = StatisticsServer.startServer()
 //    val c: Client = ClientBuilder.newClient().register(Main.moxyJsonResolver())
 //    target = c.target(Main.BASE_URI)
   }

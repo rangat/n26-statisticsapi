@@ -1,4 +1,4 @@
-package com.rrt.n26.jsonobjects;
+package com.rrt.n26.objects;
 
 import javax.xml.bind.annotation.XmlRootElement;
 import java.time.Instant;
@@ -11,6 +11,8 @@ import java.time.Instant;
 public class Transaction {
     private Double amount;
     private Long timestamp;
+
+    //used internally for convenience regarding date-time functions
     private Instant instant;
 
     public Transaction() {
@@ -51,6 +53,26 @@ public class Transaction {
 
     public void setInstant(Instant instant) {
         this.instant = instant;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        Transaction that = (Transaction) o;
+
+        if (amount != null ? !amount.equals(that.amount) : that.amount != null) return false;
+        if (timestamp != null ? !timestamp.equals(that.timestamp) : that.timestamp != null) return false;
+        return instant != null ? instant.equals(that.instant) : that.instant == null;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = amount != null ? amount.hashCode() : 0;
+        result = 31 * result + (timestamp != null ? timestamp.hashCode() : 0);
+        result = 31 * result + (instant != null ? instant.hashCode() : 0);
+        return result;
     }
 
     @Override
