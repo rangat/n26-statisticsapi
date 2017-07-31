@@ -1,5 +1,6 @@
 package com.rrt.n26;
 
+import com.rrt.n26.stats.StatisticsCache;
 import org.glassfish.grizzly.http.server.HttpServer;
 import org.glassfish.jersey.grizzly2.httpserver.GrizzlyHttpServerFactory;
 import org.glassfish.jersey.moxy.json.MoxyJsonConfig;
@@ -16,11 +17,15 @@ import java.util.logging.Logger;
 /**
  * I used some boilerplate code produced from the Jersey Framework.
  */
-public class Main {
+public class StatisticsServer {
     // Base URI the Grizzly HTTP server will listen on
     public static final URI BASE_URI = URI.create("http://localhost:8080/");
+
+    //The following variables
     private static ResourceConfig config = null;
     private static ContextResolver<MoxyJsonConfig> moxyJsonResolver = null;
+
+    public static StatisticsCache stats = new StatisticsCache();
 
     /**
      * Main method. Creates the configurated server and logs errors.
@@ -40,7 +45,7 @@ public class Main {
 
             Thread.currentThread().join();
         } catch (IOException | InterruptedException e) {
-            Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, e);
+            Logger.getLogger(StatisticsServer.class.getName()).log(Level.SEVERE, null, e);
         }
     }
 
