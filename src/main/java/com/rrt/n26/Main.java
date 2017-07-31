@@ -2,43 +2,78 @@ package com.rrt.n26;
 
 import org.glassfish.grizzly.http.server.HttpServer;
 import org.glassfish.jersey.grizzly2.httpserver.GrizzlyHttpServerFactory;
+import org.glassfish.jersey.moxy.json.MoxyJsonConfig;
 import org.glassfish.jersey.server.ResourceConfig;
 
+import javax.ws.rs.ext.ContextResolver;
 import java.io.IOException;
 import java.net.URI;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * I used some boilerplate code produced from the Jersey Framework.
  */
 public class Main {
     // Base URI the Grizzly HTTP server will listen on
-    public static final String BASE_URI = "http://localhost:8080/";
+    public static final URI BASE_URI = URI.create("http://localhost:8080/");
+    private static ResourceConfig config = null;
+    private static ContextResolver<MoxyJsonConfig> moxyJsonResolver = null;
 
     /**
-     * Starts Grizzly HTTP server exposing JAX-RS resources defined in this application.
-     * @return Grizzly HTTP server.
+     * Main method. Creates the configurated server and logs errors.
      */
-    public static HttpServer startServer() {
-        // create a resource config that scans for JAX-RS resources and providers
-        // in com.rrt.n26 package
-        final ResourceConfig rc = new ResourceConfig().packages("com.rrt.n26");
+    public static void main(String[] args) {
+        try {
+            final HttpServer server = startServer();
 
-        // create and start a new instance of grizzly http server
-        // exposing the Jersey application at BASE_URI
-        return GrizzlyHttpServerFactory.createHttpServer(URI.create(BASE_URI), rc);
+            Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    server.shutdownNow();
+                }
+            }));
+            server.start();
+            System.out.println(String.format("Application started.%nStop the application using CTRL+C"));
+
+            Thread.currentThread().join();
+        } catch (IOException | InterruptedException e) {
+            Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, e);
+        }
     }
 
-    /**
-     * Main method.
-     * @param args
-     * @throws IOException
+    /*
+       Utility to create the HTTP Server
      */
-    public static void main(String[] args) throws IOException {
-        final HttpServer server = startServer();
-        System.out.println(String.format("Jersey app started with WADL available at "
-                + "%sapplication.wadl\nHit enter to stop it...", BASE_URI));
-        System.in.read();
-        server.shutdownNow();
+    protected static HttpServer startServer() {
+        return GrizzlyHttpServerFactory.createHttpServer(BASE_URI, config(), false);
+    }
+
+    /*
+        Utility to get resource configuration for Jersey and create a new one if it doesn't exist
+     */
+    private static ResourceConfig config() {
+        if (config == null) {
+            config = new ResourceConfig().packages("com.rrt.n26").register(moxyJsonResolver());
+        }
+        return config;
+    }
+
+    /*
+        Utility to create ContextResolver for Moxy, which enables JSON support in the API
+        Gets the resolver, or creates a new one if it doesn't exist
+     */
+    protected static ContextResolver<MoxyJsonConfig> moxyJsonResolver() {
+        if (moxyJsonResolver == null) {
+            final MoxyJsonConfig moxyJsonConfig = new MoxyJsonConfig();
+            Map<String, String> namespacePrefixMapper = new HashMap<>(1);
+            namespacePrefixMapper.put("http://www.w3.org/2001/XMLSchema-instance", "xsi");
+            moxyJsonConfig.setNamespacePrefixMapper(namespacePrefixMapper).setNamespaceSeparator(':');
+            moxyJsonResolver = moxyJsonConfig.resolver();
+        }
+        return moxyJsonResolver;
     }
 }
 

@@ -6,6 +6,7 @@ I've pasted the entire code challenge at the bottom of this document. [Jump to c
 ## Assumptions Made
 * Given my interpretation the requirement below to avoid using [databases (including in-memory databases)](#database), I have built a solution that does not persist data in between instances of the application. 
 * Given my interpretation of the [time descrepancy requirement](#time), I am ensuring the POST `/transactions` endpoint rejects any transaction with a future `timestamp`.   
+* The spec seems to encourage the support JSON parameters to the rest API, so for now I am limiting the scope of input to the `/transactions` POST endpoint.
 
 ## <a name="challenge"></a>Code Challenge
 We would like to have a restful API for our statistics. The main use case for our API is to calculate realtime statistic from the last 60 seconds. There will be two APIs, one of them is called every time a transaction is made. It is also the sole input of this rest API. The other one returns the statistic based of the transactions of the last 60 seconds.
