@@ -8,16 +8,19 @@ I've pasted the entire code challenge at the bottom of this document. [Jump to c
 * Given my interpretation of the [time descrepancy requirement](#time), ~~I am ensuring the POST `/transactions` endpoint rejects any transaction with a future `timestamp`~~, the POST spec doesn't require rejecting transactions with future endpoints; instead, I will ignore these when calculating statistics.   
 * The spec seems to encourage the support JSON parameters to the rest API, so for now I am limiting the scope of input to the `/transactions` POST endpoint.
 
-## Design and Technologies Used
+## Design Decisions and Technologies Used
 * I'm using Jersey's standard REST framework to handle API calls, and MOXy on top of that to serialize and deserialize JSON-formatted input/output.
-* I considered using a Dependency-Injection framework like Guice, but I figured since that I only really wanted one singleton, `StatisticsCache`, I decided to just make it a singleton in the server. 
+* I considered using a Dependency-Injection framework like Guice, but I figured since that I only really wanted one singleton, `StatisticsCache`, I decided to just make it a singleton in the server.
+* I decided to have the `/statistics` endpoint return a default JSON object in the event that there were no valid transactions. You can see this in `StatisticsResponse`. 
 
 ## Progress
 1. I started by setting up the project, adding the REST endpoints and a stub test, and then working on ensuring my POST `/transactions` endpoint could properly serialize the JSON object that expected to pass in. 
 2. I touched up the `/transactions` endpoint such that it validated the timestamp for every request, and added it to an in-memory array in the `StatisticsCache` singleton.
+3. I added a basic implementation (`O(n)` runtime) to the `/statistics` endpoint, going through a full round-trip of integration test cases. The work for this was done in `StatisticsCache`. 
 
 ## Notes and Limitations 
 * I think given more time, I would have gone back and re-implemented the (de)serialization from JSON to use Jackson, and not MOXy. I'm much more familiar with Jackson and its flow for custom types. As it is, I think the current implementation is sufficient yet not ideal.
+* I didn't like having to call `Instant.now()` on every request, instead of just getting the timestamp from the HTTP context. However, I found this difficult to do in Jersey, and left it as a limitation of my choice of framework.
 
 ## <a name="challenge"></a>Code Challenge
 We would like to have a restful API for our statistics. The main use case for our API is to calculate realtime statistic from the last 60 seconds. There will be two APIs, one of them is called every time a transaction is made. It is also the sole input of this rest API. The other one returns the statistic based of the transactions of the last 60 seconds.

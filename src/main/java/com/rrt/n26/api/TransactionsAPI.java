@@ -8,10 +8,7 @@ import com.rrt.n26.util.TimeUtil;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.UriInfo;
+import javax.ws.rs.core.*;
 import java.time.Instant;
 
 @Path("transactions")
@@ -23,17 +20,18 @@ public class TransactionsAPI {
     /**
      * Handle HTTP POST requests.
      *
-     * @return HTTP Response 201 if the transaction is validated, or 204 otherwise
+     * @return Empty HTTP Response 201 if the transaction is validated, or 204 otherwise
      */
     @POST
     public Response handlePost(@Context UriInfo ui, Transaction t) {
+        //TODO: wrap this all in trycatch
         Instant now = Instant.now();
 
         //TODO: Delete this when done integration testing or after writing better tests
         System.out.println("now: " + now.toEpochMilli());
         System.out.println("time: " + t.getInstant().toString());
 
-        if (TimeUtil.isTimeOlderThan60Seconds(t.getInstant(), now))) {
+        if (!TimeUtil.isTimeOlderThan60Seconds(t.getInstant(), now)) {
             stats.addTransaction(t);
             return Response.created(ui.getAbsolutePath()).build();
         } else {
@@ -46,6 +44,8 @@ public class TransactionsAPI {
         I had written this before, when I originally planned to validate POST requests on whether or not the time was
         in the future, but decided not to use it in favor of more closely following the spec. See readme documentation
         on github for more.
+
+        Waiting on clarification via email before making a decision on this. 
     */
     private boolean validateTransaction(Instant time, Instant now) {
         //This might be a little confusing, so just for clarity:
