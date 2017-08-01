@@ -14,7 +14,8 @@ I've pasted the entire code challenge at the bottom of this document. [Jump to c
 * I considered using a Dependency-Injection framework like Guice, but I figured since that I only really wanted one singleton, `StatisticsCache`, I decided to just make it a singleton in the server, and use the factory pattern. This lead to clunky code, and had there been a need for more interfaces like `StatisticsCache`, I would have used DI.  
 * I decided to have the `/statistics` endpoint return a default JSON object in the event that there were no valid transactions. You can see this in `StatisticsResponse`. 
 * I implemented an all endpoints in constant time but caching the statistics value, and running an update on a schedule of 1 second. This required ensuring the statistics cache was entirely thread-safe, since all REST endpoints that talked to it could do so synchronously. Though a constantly running process is `O(n)` each second, I consider it a fair trade-off to have constant-time access to the statistical data. 
-* In the `StatisticsCache`, two lists represent the entire of transactions sent to the system. The first represents transactions that are not as of yet accounted for in statistics. Once a transaction is accounted for, it is moved to the second list, and once it is older than 60 seconds old, it is removed entirely. The sum and count is updated based on the removed and added transactions, and a new min and max are calculated for the currently represented transactions. 
+* In the `StatisticsCache`, two lists represent the entire of transactions sent to the system. The first represents transactions that are not as of yet accounted for in statistics. Once a transaction is accounted for, it is moved to the second list, and once it is older than 60 seconds old, it is removed entirely. The sum and count is updated based on the removed and added transactions, and a new min and max are calculated for the currently represented transactions.
+* I considered refactoring `StatisticsCacheImpl.updateCache` to use 2 stacks, to hold both the min and max values and avoid having to scan through multiple previously-seen transactions. However, I kept the implementation as is, given my interpretation of the `O(1)` space constraint.    
 
 ## Progress
 1. Set up the project, adding the REST endpoints and a stub test, and then working on ensuring my POST `/transactions` endpoint could properly serialize the JSON object that expected to pass in. 
@@ -83,7 +84,7 @@ For the rest api, the biggest and maybe hardest requirement is to make the `GET 
 Other requirements, which are obvious, but also listed here explicitly:
 * The API have to be threadsafe with concurrent requests
 * The API have to function properly, with proper result
-* The project should be buildable, and tests should also complete successfully. e.g. If maven is used, then mvn clean install should complete successfully.
+* The project should be buildable, and tests should also complete successfully. e.g. If maven is used, then `mvn clean install` should complete successfully.
 * <a name="time"></a>The API should be able to deal with time discrepancy, which means, at any point of time, we could receive a transaction which have a timestamp of the past
 * <a name="database"></a>Make sure to send the case in memory solution without database (including in-memory database)
 * Endpoints have to execute in constant time and memory (`O(1)`)

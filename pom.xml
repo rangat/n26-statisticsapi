@@ -184,6 +184,7 @@
                     <junitxml>.</junitxml>
                     <filereports>WDFTestSuite.txt</filereports>
                     <skipTests>false</skipTests>
+                    <parallel>false</parallel>
                 </configuration>
                 <executions>
                     <execution>

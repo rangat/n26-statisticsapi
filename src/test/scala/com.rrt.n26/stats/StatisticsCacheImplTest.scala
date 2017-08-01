@@ -45,7 +45,7 @@ class StatisticsCacheImplTest extends FlatSpec
   }
 
   it should "update the stats based on all uncomputed transactions" in {
-    val validTime30:Instant = makeInstantWithSecondsOffset(-30)
+    val validTime30: Instant = makeInstantWithSecondsOffset(-30)
     statCache.addTransaction(makeTransaction(validTime30, 30))
     statCache.addTransaction(makeTransaction(validTime30, 40))
     statCache.addTransaction(makeTransaction(validTime30, 50))
@@ -53,6 +53,36 @@ class StatisticsCacheImplTest extends FlatSpec
     statCache.updateCache(now)
 
     statCache.cachedStats shouldBe new StatisticsResponse(120d, 40d, 50d, 30d, 3L)
+  }
+
+  it should "remove transactions from stats when they are no longer valid" in {
+    val validTime10: Instant = makeInstantWithSecondsOffset(-10)
+    val validTime20: Instant = makeInstantWithSecondsOffset(-20)
+    val validTime30: Instant = makeInstantWithSecondsOffset(-30)
+
+    statCache.addTransaction(makeTransaction(validTime10, 30))
+    statCache.addTransaction(makeTransaction(validTime20, 40))
+    statCache.addTransaction(makeTransaction(validTime30, 50))
+
+    statCache.updateCache(now)
+
+    statCache.cachedStats shouldBe new StatisticsResponse(120d, 40d, 50d, 30d, 3L)
+    
+    val nowAfter35: Instant = makeInstantWithSecondsOffset(35)
+    //the first two transactions should still be valid
+    statCache.updateCache(nowAfter35)
+
+    statCache.cachedStats shouldBe new StatisticsResponse(70d, 35d, 40d, 30d, 2L)
+
+    val nowAfter45: Instant = makeInstantWithSecondsOffset(45)
+    statCache.updateCache(nowAfter45)
+
+    statCache.cachedStats shouldBe new StatisticsResponse(30d, 30d, 30d, 30d, 1L)
+
+    val nowAfter55: Instant = makeInstantWithSecondsOffset(55)
+    statCache.updateCache(nowAfter55)
+
+    statCache.cachedStats should equal(new StatisticsResponse)
   }
 
   it should "ignore any transactions that are invalid" in {

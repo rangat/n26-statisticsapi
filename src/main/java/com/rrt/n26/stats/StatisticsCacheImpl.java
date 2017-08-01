@@ -6,7 +6,6 @@ import com.rrt.n26.util.TimeUtil;
 
 import java.time.Instant;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -77,7 +76,7 @@ public class StatisticsCacheImpl implements StatisticsCache {
         for (Transaction t: transactionsToRemove) {
             Double a = t.getAmount();
             sum -= a;
-            count--;
+            count -= 1;
         }
 
         for (Transaction t: transactionsToAdd) {
@@ -92,6 +91,16 @@ public class StatisticsCacheImpl implements StatisticsCache {
             }
         }
 
+        // update our new represented and uncomputed transactions,
+        if (transactionsToRemove.size() > 0) {
+            representedTransactions.removeAll(transactionsToRemove);
+        }
+
+        if (transactionsToAdd.size() > 0) {
+            uncomputedTransactions.removeAll(transactionsToAdd);
+            representedTransactions.addAll(transactionsToAdd);
+        }
+
         //need to test our new min and max against all existing values as well
         for (Transaction t: representedTransactions) {
             Double a = t.getAmount();
@@ -102,19 +111,7 @@ public class StatisticsCacheImpl implements StatisticsCache {
                 min = a;
             }
         }
-
-        // update our new represented and uncomputed transactions,
-        if (transactionsToRemove.size() > 0) {
-            representedTransactions.removeAll(transactionsToRemove);
-            System.out.println("added transactions" + Arrays.toString(transactionsToRemove.toArray()));
-        }
-
-        if (transactionsToAdd.size() > 0) {
-            uncomputedTransactions.removeAll(transactionsToAdd);
-            representedTransactions.addAll(transactionsToAdd);
-            System.out.println("moved transactions" + Arrays.toString(transactionsToAdd.toArray()));
-        }
-
+        
         // finally, update our cache
         cachedStats.setSum(sum);
         cachedStats.setCount(count);
@@ -127,7 +124,5 @@ public class StatisticsCacheImpl implements StatisticsCache {
             cachedStats.setMin(min);
             cachedStats.setMax(max);
         }
-        System.out.println("Updated cache: " + cachedStats.toString());
-        System.out.println("Thread name: " + Thread.currentThread().getName());
     }
 }
