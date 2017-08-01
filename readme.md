@@ -5,24 +5,28 @@ I've pasted the entire code challenge at the bottom of this document. [Jump to c
 
 ## Assumptions Made
 * Given my interpretation the requirement below to avoid using [databases (including in-memory databases)](#database), I have built a solution that does not persist data in between instances of the application. 
-* Given my interpretation of the [time descrepancy requirement](#time), ~~I am ensuring the POST `/transactions` endpoint rejects any transaction with a future `timestamp`~~, the POST spec doesn't require rejecting transactions with future endpoints; instead, I will ignore these when calculating statistics.   
+* Given my interpretation of the [time descrepancy requirement](#time), ~~I am ensuring the POST `/transactions` endpoint rejects any transaction with a future `timestamp`~~, the POST spec doesn't require rejecting transactions with future endpoints; instead, I will ignore these when calculating statistics. I allow future transactions to be "logged" through the endpoint.
+* There is no mention of a `/transactions` GET endpoint, so I have omitted it's functionality, given how I am prioritizing the remainder of work to be done. I would likely not do this in a production environment.
 * The spec seems to encourage the support JSON parameters to the rest API, so for now I am limiting the scope of input to the `/transactions` POST endpoint.
 
 ## Design Decisions and Technologies Used
 * I'm using Jersey's standard REST framework to handle API calls, and MOXy on top of that to serialize and deserialize JSON-formatted input/output.
-* I considered using a Dependency-Injection framework like Guice, but I figured since that I only really wanted one singleton, `StatisticsCache`, I decided to just make it a singleton in the server. The downside to this was my having to introduce specific methods to the singleton for tests. 
+* I considered using a Dependency-Injection framework like Guice, but I figured since that I only really wanted one singleton, `StatisticsCache`, I decided to just make it a singleton in the server, and use the factory pattern. This lead to clunky code, and had there been a need for more interfaces like `StatisticsCache`, I would have used DI.  
 * I decided to have the `/statistics` endpoint return a default JSON object in the event that there were no valid transactions. You can see this in `StatisticsResponse`. 
+* I implemented an all endpoints in constant time but caching the statistics value, and running an update on a schedule of 1 second. This required ensuring the statistics cache was entirely thread-safe, since all REST endpoints that talked to it could do so synchronously. Though a constantly running process is `O(n)` each second, I consider it a fair trade-off to have constant-time access to the statistical data. 
+* In the `StatisticsCache`, two lists represent the entire of transactions sent to the system. The first represents transactions that are not as of yet accounted for in statistics. Once a transaction is accounted for, it is moved to the second list, and once it is older than 60 seconds old, it is removed entirely. The sum and count is updated based on the removed and added transactions, and a new min and max are calculated for the currently represented transactions. 
 
 ## Progress
 1. I started by setting up the project, adding the REST endpoints and a stub test, and then working on ensuring my POST `/transactions` endpoint could properly serialize the JSON object that expected to pass in. 
 2. I touched up the `/transactions` endpoint such that it validated the timestamp for every request, and added it to an in-memory array in the `StatisticsCache` singleton.
 3. I added a basic implementation (`O(n)` runtime) to the `/statistics` endpoint, going through a full round-trip of integration test cases. The work for this was done in `StatisticsCache`. 
 4. I wrote tests for all of the classes, endpoints, and utilities I'd written so far
+5. I changed the architecture of `StatisticsCache` such that it actually behaved as a cache and returned stats in `O(1)` time. 
 
 ## Notes and Limitations 
 * I think given more time, I would have gone back and re-implemented the (de)serialization from JSON to use Jackson, and not MOXy. I'm much more familiar with Jackson and its flow for custom types. As it is, I think the current implementation is sufficient yet not ideal.
 * I didn't like having to call `Instant.now()` on every request, instead of just getting the timestamp from the HTTP context. However, I found this difficult to do in Jersey, and left it as a limitation of my choice of framework. Looking back, I'd certainly use a different framework, since I found Jersey's documentation out of date and modern support limited. 
-* By the end of writing my first pass at testing, I had begun to wish that I'd used Spring for both it's simple REST handling and dependency injection. I'll likely introduce DI from the beginning for a project like this going forward. 
+* By the end of writing my first pass at testing, I had begun to wish that I'd used Spring for both it's simple REST handling and dependency injection.
 
 
 ## <a name="challenge"></a>Code Challenge
