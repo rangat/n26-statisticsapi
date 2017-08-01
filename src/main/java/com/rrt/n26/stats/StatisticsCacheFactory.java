@@ -10,7 +10,7 @@ public class StatisticsCacheFactory {
 
     public static StatisticsCache getInstance() {
         if (cache == null) {
-            return new StatisticsCacheImpl();
+            cache = new StatisticsCacheImpl();
         }
 
         return cache;
