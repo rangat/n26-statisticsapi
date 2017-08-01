@@ -1,6 +1,7 @@
 package com.rrt.n26;
 
 import com.rrt.n26.stats.StatisticsCache;
+import com.rrt.n26.stats.StatisticsCacheFactory;
 import org.glassfish.grizzly.http.server.HttpServer;
 import org.glassfish.jersey.grizzly2.httpserver.GrizzlyHttpServerFactory;
 import org.glassfish.jersey.moxy.json.MoxyJsonConfig;
@@ -19,13 +20,11 @@ import java.util.logging.Logger;
  */
 public class StatisticsServer {
     // Base URI the Grizzly HTTP server will listen on
-    public static final URI BASE_URI = URI.create("http://localhost:8080/");
+    private static final URI BASE_URI = URI.create("http://localhost:8080/");
 
     //The following variables
     private static ResourceConfig config = null;
     private static ContextResolver<MoxyJsonConfig> moxyJsonResolver = null;
-
-    public static StatisticsCache stats = new StatisticsCache();
 
     /**
      * Main method. Creates the configurated server and logs errors.
@@ -33,7 +32,11 @@ public class StatisticsServer {
     public static void main(String[] args) {
         try {
             final HttpServer server = startServer();
-            Runtime.getRuntime().addShutdownHook(new Thread(server::shutdownNow));
+            final StatisticsCache stats = StatisticsCacheFactory.getInstance();
+            Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+                server.shutdownNow();
+                stats.shutdownScheduler();
+            }));
             server.start();
             System.out.println(String.format("Application started.%nStop the application using CTRL+C"));
 
