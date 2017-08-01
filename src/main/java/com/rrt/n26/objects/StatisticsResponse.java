@@ -87,4 +87,15 @@ public class StatisticsResponse {
         result = 31 * result + (count != null ? count.hashCode() : 0);
         return result;
     }
+
+    @Override
+    public String toString() {
+        return "StatisticsResponse{" +
+                "sum=" + sum +
+                ", avg=" + avg +
+                ", max=" + max +
+                ", min=" + min +
+                ", count=" + count +
+                '}';
+    }
 }

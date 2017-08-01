@@ -6,6 +6,7 @@ import com.rrt.n26.util.TimeUtil;
 
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -27,9 +28,10 @@ public class StatisticsCacheImpl implements StatisticsCache {
     protected final List<Transaction> representedTransactions = new ArrayList<>();
     protected final StatisticsResponse cachedStats = new StatisticsResponse();
 
+
     public StatisticsCacheImpl() {
-        final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
-        cacheUpdates = scheduler.scheduleAtFixedRate(this::updateCache, 1, 1,
+        final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(5);
+        cacheUpdates = scheduler.scheduleWithFixedDelay(this::updateCache, 1, 2,
                 TimeUnit.SECONDS);
     }
 
@@ -102,10 +104,16 @@ public class StatisticsCacheImpl implements StatisticsCache {
         }
 
         // update our new represented and uncomputed transactions,
-        representedTransactions.removeAll(transactionsToRemove);
-        uncomputedTransactions.removeAll(transactionsToAdd);
-        representedTransactions.addAll(transactionsToAdd);
+        if (transactionsToRemove.size() > 0) {
+            representedTransactions.removeAll(transactionsToRemove);
+            System.out.println("added transactions" + Arrays.toString(transactionsToRemove.toArray()));
+        }
 
+        if (transactionsToAdd.size() > 0) {
+            uncomputedTransactions.removeAll(transactionsToAdd);
+            representedTransactions.addAll(transactionsToAdd);
+            System.out.println("moved transactions" + Arrays.toString(transactionsToAdd.toArray()));
+        }
 
         // finally, update our cache
         cachedStats.setSum(sum);
@@ -119,5 +127,7 @@ public class StatisticsCacheImpl implements StatisticsCache {
             cachedStats.setMin(min);
             cachedStats.setMax(max);
         }
+        System.out.println("Updated cache: " + cachedStats.toString());
+        System.out.println("Thread name: " + Thread.currentThread().getName());
     }
 }

@@ -15,9 +15,6 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-/**
- * I used some boilerplate code produced from the Jersey Framework.
- */
 public class StatisticsServer {
     // Base URI the Grizzly HTTP server will listen on
     private static final URI BASE_URI = URI.create("http://localhost:8080/");

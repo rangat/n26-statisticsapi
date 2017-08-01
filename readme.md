@@ -17,11 +17,13 @@ I've pasted the entire code challenge at the bottom of this document. [Jump to c
 * In the `StatisticsCache`, two lists represent the entire of transactions sent to the system. The first represents transactions that are not as of yet accounted for in statistics. Once a transaction is accounted for, it is moved to the second list, and once it is older than 60 seconds old, it is removed entirely. The sum and count is updated based on the removed and added transactions, and a new min and max are calculated for the currently represented transactions. 
 
 ## Progress
-1. I started by setting up the project, adding the REST endpoints and a stub test, and then working on ensuring my POST `/transactions` endpoint could properly serialize the JSON object that expected to pass in. 
-2. I touched up the `/transactions` endpoint such that it validated the timestamp for every request, and added it to an in-memory array in the `StatisticsCache` singleton.
-3. I added a basic implementation (`O(n)` runtime) to the `/statistics` endpoint, going through a full round-trip of integration test cases. The work for this was done in `StatisticsCache`. 
-4. I wrote tests for all of the classes, endpoints, and utilities I'd written so far
-5. I changed the architecture of `StatisticsCache` such that it actually behaved as a cache and returned stats in `O(1)` time. 
+1. Set up the project, adding the REST endpoints and a stub test, and then working on ensuring my POST `/transactions` endpoint could properly serialize the JSON object that expected to pass in. 
+2. Touched up the `/transactions` endpoint such that it validated the timestamp for every request, and added it to an in-memory array in the `StatisticsCache` singleton.
+3. Added a basic implementation (`O(n)` runtime) to the `/statistics` endpoint, going through a full round-trip of integration test cases. The work for this was done in `StatisticsCache`. 
+4. Wrote tests for all of the classes, endpoints, and utilities I'd written so far
+5. Changed the architecture of `StatisticsCache` such that it actually behaved as a cache and returned stats in `O(1)` time. 
+6. Solved a major bug of my own creation in the `StatisticsCacheFactory`, where each call to `getInstance` returned a new instance instead of maintaining a singleton.
+7. Wrote an integration test suite
 
 ## Notes and Limitations 
 * I think given more time, I would have gone back and re-implemented the (de)serialization from JSON to use Jackson, and not MOXy. I'm much more familiar with Jackson and its flow for custom types. As it is, I think the current implementation is sufficient yet not ideal.
