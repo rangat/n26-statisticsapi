@@ -8,14 +8,17 @@ import com.rrt.n26.util.TimeUtil;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
-import javax.ws.rs.core.*;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.UriInfo;
 import java.time.Instant;
 
 @Path("transactions")
 @Consumes(MediaType.APPLICATION_JSON)
 public class TransactionsAPI {
 
-    StatisticsCache stats = StatisticsServer.stats;
+    private final StatisticsCache stats = StatisticsServer.stats;
 
     /**
      * Handle HTTP POST requests.
@@ -29,9 +32,9 @@ public class TransactionsAPI {
 
         //TODO: Delete this when done integration testing or after writing better tests
         System.out.println("now: " + now.toEpochMilli());
-        System.out.println("time: " + t.getInstant().toString());
+        System.out.println("time: " + t.toInstant().toString());
 
-        if (!TimeUtil.isTimeOlderThan60Seconds(t.getInstant(), now)) {
+        if (!TimeUtil.isTimeOlderThan60Seconds(t.toInstant(), now)) {
             stats.addTransaction(t);
             return Response.created(ui.getAbsolutePath()).build();
         } else {

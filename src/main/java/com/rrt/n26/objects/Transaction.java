@@ -12,22 +12,12 @@ public class Transaction {
     private Double amount;
     private Long timestamp;
 
-    //used internally for convenience regarding date-time functions
-    private Instant instant;
-
     public Transaction() {
-    }
-
-    public Transaction(Double amount, Long timestamp, Instant instant) {
-        this.amount = amount;
-        this.timestamp = timestamp;
-        this.instant = instant;
     }
 
     public Transaction(Double amount, Long timestamp) {
         this.amount = amount;
         this.timestamp = timestamp;
-        this.instant = Instant.ofEpochMilli(timestamp);
     }
 
     public Double getAmount() {
@@ -44,15 +34,10 @@ public class Transaction {
 
     public void setTimestamp(Long timestamp) {
         this.timestamp = timestamp;
-        this.instant = Instant.ofEpochMilli(timestamp);
     }
 
-    public Instant getInstant() {
-        return instant;
-    }
-
-    public void setInstant(Instant instant) {
-        this.instant = instant;
+    public Instant toInstant() {
+        return Instant.ofEpochMilli(timestamp);
     }
 
     @Override
@@ -63,15 +48,13 @@ public class Transaction {
         Transaction that = (Transaction) o;
 
         if (amount != null ? !amount.equals(that.amount) : that.amount != null) return false;
-        if (timestamp != null ? !timestamp.equals(that.timestamp) : that.timestamp != null) return false;
-        return instant != null ? instant.equals(that.instant) : that.instant == null;
+        return timestamp != null ? timestamp.equals(that.timestamp) : that.timestamp == null;
     }
 
     @Override
     public int hashCode() {
         int result = amount != null ? amount.hashCode() : 0;
         result = 31 * result + (timestamp != null ? timestamp.hashCode() : 0);
-        result = 31 * result + (instant != null ? instant.hashCode() : 0);
         return result;
     }
 
@@ -83,9 +66,6 @@ public class Transaction {
         }
         if (timestamp != null) {
             str.append("Timestamp: ").append(timestamp.toString()).append("\t");
-        }
-        if (instant != null) {
-            str.append("Instant: ").append(instant.toString());
         }
         return str.toString();
     }

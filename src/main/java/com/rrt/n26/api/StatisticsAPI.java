@@ -14,7 +14,9 @@ import java.time.Instant;
 @Produces(MediaType.APPLICATION_JSON)
 public class StatisticsAPI {
 
-    StatisticsCache stats = StatisticsServer.stats;
+    private final StatisticsCache stats = StatisticsServer.stats;
+
+    protected Instant now = Instant.now();
 
     /**
      *
@@ -24,7 +26,7 @@ public class StatisticsAPI {
      */
     @GET
     public StatisticsResponse returnStatistics() {
-        Instant now = Instant.now();
+        now = Instant.now();
         return stats.computeStats(now);
     }
 }

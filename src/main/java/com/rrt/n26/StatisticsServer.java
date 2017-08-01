@@ -33,13 +33,7 @@ public class StatisticsServer {
     public static void main(String[] args) {
         try {
             final HttpServer server = startServer();
-
-            Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    server.shutdownNow();
-                }
-            }));
+            Runtime.getRuntime().addShutdownHook(new Thread(server::shutdownNow));
             server.start();
             System.out.println(String.format("Application started.%nStop the application using CTRL+C"));
 
